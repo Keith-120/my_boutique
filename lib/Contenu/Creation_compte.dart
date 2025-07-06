@@ -181,7 +181,7 @@ class _Creation_CompteState extends State<Creation_Compte> {
 
     if (user != null) {
       // Une fois que l'utilisateur est créé, on l'ajoute à Firestore avec son rôle  collection('cart')
-      //             .add({
+
       await FirebaseFirestore.instance.collection('users').doc(user.uid).collection('user').doc(user.uid).set({
         'nom': Nom,
         'email': email,

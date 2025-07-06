@@ -571,7 +571,8 @@ class _AcceuillessState extends State<Acceuilless> {
     'Épices, condiments & assaisonnements',
   ];
 
-  void rechercherEnLive(String query) async {
+  void rechercherEnLive(String query) async
+  {
     if (query.trim().isEmpty) {
       setState(() => searchResults = []);
       return;
