@@ -10,107 +10,75 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'OrangeMoneyPage.dart';
+
 class MapPage extends StatefulWidget {
   @override
-  _MapPageState createState() => _MapPageState();
+  MapPageState createState() => MapPageState();
 }
 
-class _MapPageState extends State<MapPage> {
-  final _phoneController = TextEditingController();
-  final _nomController = TextEditingController();
+class MapPageState extends State<MapPage> {
+  final phoneController = TextEditingController();
+  final nomController = TextEditingController();
+  final TextEditingController clientAddressController = TextEditingController();
 
-  void _submitAddress() async {
-    String address = _address;
-    String phone = _phoneController.text;
-    String nom = _nomController.text;
-    if (address.isEmpty || phone.isEmpty || nom.isEmpty) {
-      Fluttertoast.showToast(
-          msg: "Veuillez entrer votre adresse et votre numéro.");
-      return;
-    }
-
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
-          {
-            'nom': nom,
-            'address': address,
-            'phone': phone,
-          },
-          SetOptions(
-              merge:
-                  true)); // Enregistrer l'adresse et le téléphone dans Firestore
-    }
-
-    Fluttertoast.showToast(msg: "Adresse et numéro envoyés avec succès.");
-    // Retourner à la page du panier ou vers une page de confirmation
-    Navigator.pop(context); // Retour à la page précédente
-  }
-
-  late LatLng _currentPosition =
-      LatLng(48.8584, 2.2945); // Position initiale du livreur
-  late LatLng _clientPosition =
-      LatLng(48.8619, 2.3314); // Position statique du client
-  late List<LatLng> _routePoints = []; // Points pour dessiner l'itinéraire
-  late MapController _mapController;
-  String _address = "Adresse du livreur";
-  final TextEditingController _clientAddressController =
-      TextEditingController();
+  late LatLng poosition = LatLng(48.8584, 2.2945);
+  late LatLng clientPosition = LatLng(48.8619, 2.3314);
+  late List<LatLng> routePoints = [];
+  late MapController mapController;
+  String address = "Adresse du livreur";
 
   @override
   void initState() {
     super.initState();
-    _mapController = MapController();
-    _getLocationPermission();
+    mapController = MapController();
+    obtenir_Permission_Location();
   }
 
-  // Demander la permission pour la localisation
-  Future<void> _getLocationPermission() async {
+  Future<void> obtenir_Permission_Location() async {
     var status = await Permission.location.request();
     if (status.isGranted) {
       _getCurrentLocation();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Permission refusée. Activez la localisation."),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Permission refusée. Activez la localisation."),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
     }
   }
 
-  // Obtenir la position actuelle
   Future<void> _getCurrentLocation() async {
     try {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
       setState(() {
-        _currentPosition = LatLng(position.latitude, position.longitude);
+        poosition = LatLng(position.latitude, position.longitude);
       });
-      _mapController.move(_currentPosition, 15.0);
-      _getAddress(_currentPosition.latitude, _currentPosition.longitude);
-      _getRoute(_currentPosition, _clientPosition); // Récupérer l'itinéraire
+      mapController.move(poosition, 15.0);
+      _getAddress(poosition.latitude,poosition.longitude);
+      _getRoute( poosition, clientPosition);
     } catch (e) {
       print('Erreur localisation : $e');
     }
   }
 
-  // Obtenir l'adresse à partir des coordonnées
   Future<void> _getAddress(double latitude, double longitude) async {
     try {
-      List<Placemark> placemarks =
-          await placemarkFromCoordinates(latitude, longitude);
+      List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
       Placemark place = placemarks[0];
       setState(() {
-        _address =
-            "${place.street}, ${place.locality}, ${place.postalCode}, ${place.country}";
+        address = "${place.street}, ${place.locality}, ${place.postalCode}, ${place.country}";
       });
     } catch (e) {
       setState(() {
-        _address = "Adresse introuvable";
+        address = "Adresse introuvable";
       });
     }
   }
 
-  // Récupérer l'itinéraire entre le client et le livreur via OSRM
   Future<void> _getRoute(LatLng start, LatLng end) async {
     final url =
         'http://router.project-osrm.org/route/v1/driving/${start.longitude},${start.latitude};${end.longitude},${end.latitude}?overview=full&geometries=geojson';
@@ -121,182 +89,334 @@ class _MapPageState extends State<MapPage> {
       final route = data['routes'][0]['geometry']['coordinates'];
 
       setState(() {
-        _routePoints =
-            route.map<LatLng>((point) => LatLng(point[1], point[0])).toList();
+        routePoints = route.map<LatLng>((point) => LatLng(point[1], point[0])).toList();
       });
     } else {
       print("Erreur lors de la récupération de l'itinéraire.");
     }
   }
 
-  // Ajouter l'adresse du client
   void _addClientAddress() async {
-    final address = _clientAddressController.text.trim();
+    final address = clientAddressController.text.trim();
     if (address.isNotEmpty) {
       try {
         List<Location> locations = await locationFromAddress(address);
-        final clientLatLng =
-            LatLng(locations[0].latitude, locations[0].longitude);
+        final clientLatLng = LatLng(locations[0].latitude, locations[0].longitude);
 
         setState(() {
-          _clientPosition = clientLatLng;
+          clientPosition = clientLatLng;
         });
 
-        // Recalculer l'itinéraire avec la nouvelle position du client
-        _getRoute(_currentPosition, _clientPosition);
-        _mapController.move(_clientPosition, 15.0);
+        _getRoute(poosition, clientPosition);
+        mapController.move(clientPosition, 15.0);
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Adresse du client invalide."),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Adresse du client invalide."),
+            backgroundColor: Colors.orange,
+          ),
+        );
       }
     }
+  }
+
+  void _submitAddress() async {
+    String addresse = address;
+    String phone = phoneController.text;
+    String nom = nomController.text;
+
+    if (addresse.isEmpty || phone.isEmpty || nom.isEmpty) {
+      Fluttertoast.showToast(msg: "Veuillez entrer votre adresse et votre numéro.");
+      return;
+    }
+
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'nom': nom,
+        'address': addresse,
+        'phone': phone,
+        'sendDate': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    }
+
+    Fluttertoast.showToast(msg: "Adresse et numéro envoyés avec succès.");
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OrangeMoneyPage(
+          montant: 5000,
+          cartItems: [],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final markers = <Marker>[
-      // Marqueur pour la position du livreur
       Marker(
-        point: _currentPosition,
+        point: poosition,
         width: 80,
         height: 80,
         child: Column(
           children: [
-            Icon(Icons.location_on, color: Colors.red, size: 40),
-            Text("Livreur", style: TextStyle(fontSize: 12)),
+            Icon(Icons.location_on, color: Colors.redAccent, size: 40),
+            Text("Livreur",
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
-      // Marqueur pour le client
       Marker(
-        point: _clientPosition,
+        point: clientPosition,
         width: 80,
         height: 80,
         child: Column(
           children: [
-            Icon(Icons.person_pin_circle, color: Colors.blue, size: 40),
-            Text("Client", style: TextStyle(fontSize: 12)),
+            Icon(Icons.person_pin_circle, color: Colors.blueAccent, size: 40),
+            Text("Client",
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Carte avec Itinéraire et Marqueur'),
-        backgroundColor: Color(701636),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(70),
+        child: AppBar(
+          elevation: 5,
+          centerTitle: true,
+          title: Text(
+            "Localisation du Client",
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              shadows: [
+                Shadow(
+                  color: Colors.black26,
+                  offset: Offset(1, 1),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+          ),
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xffB81736), Color(0xff281537)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(25),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  offset: Offset(0, 3),
+                  blurRadius: 6,
+                ),
+              ],
+            ),
+          ),
+          backgroundColor: Colors.transparent, // pour garder le dégradé
+        ),
       ),
-      body: Column(children: [
-        Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Row(
-            children: [
-            SizedBox(
-            width:197,
-            height: 40,
-            child:
-            Expanded(
-                child: TextField(
 
-                  controller: _clientAddressController,
-                  decoration: InputDecoration(
-                    hintText: 'Entrez l\'adresse du client',
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(40))),
+      body: Column(
+        children: [
+          // Champ adresse client
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: clientAddressController,
+                    decoration: InputDecoration(
+                      hintText: "Adresse du client",
+                      prefixIcon: Icon(Icons.search, color: Color(0xffB81736)),
+                      filled: true,
+                      fillColor: Colors.grey.shade100,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: _addClientAddress,
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
+                    backgroundColor: Color(0xffB81736),
+                  ),
+                  child: Text("Tracer", style: TextStyle(color: Colors.white)),
+                ),
+              ],
             ),
-              SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: _addClientAddress,
-                child: Text("Tracer le chemin "),
-              ),
-            ],
           ),
-        ),
-        Expanded(
-          child: FlutterMap(
-            mapController: _mapController,
-            options: MapOptions(
-              center: _currentPosition,
-              zoom: 15.0,
-            ),
-            children: [
-              TileLayer(
-                urlTemplate:
-                    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                subdomains: ['a', 'b', 'c'],
-              ),
-              MarkerLayer(markers: markers),
-              PolylineLayer(
-                polylines: [
-                  Polyline(
-                    points: _routePoints,
-                    strokeWidth: 4.0,
-                    color: Colors.blue,
+
+          // Map
+          Expanded(
+            child: Card(
+              margin: EdgeInsets.all(10),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              elevation: 5,
+              child: Stack(
+                children: [
+                  FlutterMap(
+                    mapController: mapController,
+                    options: MapOptions(
+                      center: poosition,
+                      zoom: 15.0,
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                        'https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=2xnZ3d7WBWgJCdFtjp7g',
+                        userAgentPackageName: 'com.example.flutter_map_app',
+                      ),
+                      MarkerLayer(markers: [
+                        Marker(
+                          point: poosition,
+                          width: 80,
+                          height: 80,
+                          child: Column(
+                            children: [
+                              Icon(Icons.location_on, color: Color(0xffB81736),
+                                  size: 40),
+                              Text("Livreur",
+                                  style: TextStyle(fontSize: 12,
+                                      fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                        Marker(
+                          point: clientPosition,
+                          width: 80,
+                          height: 80,
+                          child: Column(
+                            children: [
+                              Icon(Icons.person_pin_circle,
+                                  color: Color(0xff281537), size: 40),
+                              Text("Client",
+                                  style: TextStyle(fontSize: 12,
+                                      fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                      ]),
+                      PolylineLayer(
+                        polylines: [
+                          Polyline(
+                            points: routePoints,
+                            strokeWidth: 4.0,
+                            color: Color(0xffB81736),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: Text(
+                      "© MapTiler © OpenStreetMap contributors",
+                      style: TextStyle(fontSize: 10, color: Colors.grey),
+                    ),
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
 
-
-        Container(
-
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(padding: EdgeInsets.only(top:5.0)),
-              SizedBox(
-                width:200,
-                height: 40,
-                child: TextField(
-                  controller: _phoneController,
-                  decoration: InputDecoration(
-                    labelText: "Numéro de téléphone",
-                    border: OutlineInputBorder(),
-
+          // Formulaire en bas
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: phoneController,
+                        decoration: InputDecoration(
+                          labelText: "Téléphone",
+                          prefixIcon: Icon(Icons.phone, color: Color(
+                              0xffB81736)),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: nomController,
+                        decoration: InputDecoration(
+                          labelText: "Nom",
+                          prefixIcon: Icon(Icons.person, color: Color(
+                              0xffB81736)),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                Text(
+                  "📍 $address",
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                ),
+                SizedBox(height: 15),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xffB81736), Color(0xff281537)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(30),
                   ),
-                ),
-              ),
-              Padding(padding: EdgeInsets.only(top:10.0)),
-          SizedBox(
-            width:200,
-            height: 40,
-            child:
-              TextField(
-                controller: _nomController,
-                decoration: InputDecoration(
-                  labelText: "Nom",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-          )
-            ],
-          ),
-        ),
+                  child: ElevatedButton(
+                    onPressed: _submitAddress,
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      backgroundColor: Colors.transparent, // important
+                      shadowColor: Colors.transparent,     // enlever l’ombre violette
+                    ),
+                    child: Text(
+                      "Envoyer",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ),
+                )
 
-
-        Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Text(
-            'Adresse du livreur: $_address',
-            style: TextStyle(fontSize: 16),
+              ],
+            ),
           ),
-        ),
-        ElevatedButton(
-          onPressed: _submitAddress,
-          child: Text("Envoyer"),
-        )
-      ]),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Color(0xffB81736),
         onPressed: _getCurrentLocation,
-        tooltip: 'Obtenir la position du livreur',
-        child: Icon(Icons.my_location),
+        tooltip: "Obtenir la position du livreur",
+        child: Icon(Icons.my_location, color: Colors.white),
       ),
     );
   }
-}
+  }

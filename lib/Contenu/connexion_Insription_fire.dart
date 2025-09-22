@@ -1,39 +1,60 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class authentification_service
-{
-  FirebaseAuth _auth = FirebaseAuth.instance;
+class AuthentificationService {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  //creation de l utilisateur  de l application *******************************************************
+  // 🔹 Création de l’utilisateur avec email, mot de passe, nom et numéro de téléphone
   Future<User?> signUpWithEmailAndPassword(
-      String Nom,String Email, String Password) async {
+      String nom, String email, String password, String phoneNumber) async {
     try {
       UserCredential credential = await _auth.createUserWithEmailAndPassword(
-         email: Email, password: Password);
-      return credential.user;
+        email: email,
+        password: password,
+      );
+
+      User? user = credential.user;
+
+      if (user != null) {
+        // 🔹 Sauvegarder les infos supplémentaires dans Firestore
+        await _firestore.collection("users").doc(user.uid).set({
+          "uid": user.uid,
+          "nom": nom,
+          "email": email,
+          "phone": phoneNumber,
+          "createdAt": FieldValue.serverTimestamp(),
+        });
+      }
+
+      return user;
     } catch (e) {
       Fluttertoast.showToast(
-          msg: "veuillez verifier vos information",
-          gravity: ToastGravity.CENTER,
-          fontSize: 5);
+        msg: "Erreur inscription : ${e.toString()}",
+        gravity: ToastGravity.CENTER,
+        fontSize: 14,
+      );
     }
     return null;
   }
 
-//connexion via login de l application *******************************************************
-
+  // 🔹 Connexion avec email et mot de passe
   Future<User?> signInWithEmailAndPassword(
-      String Email, String Password) async {
+      String email, String password) async {
     try {
       UserCredential credential = await _auth.signInWithEmailAndPassword(
-          email: Email, password: Password);
+        email: email,
+        password: password,
+      );
+
       return credential.user;
     } catch (e) {
       Fluttertoast.showToast(
-          msg: "veuillez verifier vos information",
-          gravity: ToastGravity.CENTER,
-          fontSize: 5);
+        msg: "Vérifiez vos informations : ${e.toString()}",
+        gravity: ToastGravity.CENTER,
+        fontSize: 14,
+      );
     }
     return null;
   }

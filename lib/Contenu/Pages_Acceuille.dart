@@ -2,10 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:liste_aut/Contenu/Recuperation_Donnees.dart';
-import 'package:liste_aut/Contenu/AddArticlePage.dart';
-import 'Detaille_article.dart';
-import 'navigationss.dart';
+import 'package:liste_aut/Contenu/Data_recovery.dart';
+import 'package:liste_aut/Contenu/Page_Ajout_article.dart';
+import 'Details_article.dart';
+import 'navigations.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,19 +15,24 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePage_State extends State<HomePage> {
-  @override
   bool isAdmin = false;
 
   @override
   void initState() {
     super.initState();
-    checkIfAdmin();
+    verifie_Admin();
   }
 
-  Future<void> checkIfAdmin() async {
+
+  Future<void> verifie_Admin() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).collection('user').doc(user.uid).get();
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('user')
+          .doc(user.uid)
+          .get();
       if (doc.exists && doc.data()?['role'] == 'admin') {
         setState(() {
           isAdmin = true;
@@ -36,9 +41,10 @@ class _HomePage_State extends State<HomePage> {
     }
   }
 
-  Future<List<Article>> fetchArticles() async {
+
+  Future<List<Article>> recupere_articles() async {
     List<Article> allArticles = [];
-    List<String> collections = ['Haricot']; // Tes gammes ici
+    List<String> collections = ['Haricot']; // Liste des collections
 
     for (String collection in collections) {
       QuerySnapshot snapshot = await FirebaseFirestore.instance.collection(collection).get();
@@ -54,100 +60,144 @@ class _HomePage_State extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Haricot')),
+      // AppBar
+      appBar: AppBar(
+        title: Text('Haricot'),
+        elevation: 0,
+      ),
       body: FutureBuilder<List<Article>>(
-        future: fetchArticles(),
+        future: recupere_articles(),
         builder: (context, snapshot) {
+
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
 
+
           if (snapshot.hasError) {
-            if (snapshot.hasError) {
-              print('Erreur Firebase : ${snapshot.error}');
-              return Center(child: Text('Erreur de récupération des articles'));
-            }
+            print('erreur Firebase : ${snapshot.error}');
+            return Center(child: Text('erreur de récupération des articles'));
           }
 
+
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('Aucun article trouvé'));
+            return Center(child: Text('aucun article trouvé'));
           }
 
           List<Article> articles = snapshot.data!;
 
           return Stack(
             children: [
+
               Container(
                 height: double.infinity,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [Color(0xffB81736), Color(0xff281537)]),
-                ),
-                padding: EdgeInsets.only(top: 10),
-                child: Column(
-                  children: [
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          "Sélectionnez vos gammes de produits !",
-                          style: TextStyle(
-                            fontStyle: FontStyle.italic,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                          ),
-                        ),
+                 width: double.infinity,
+                 decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      colors: [Color(0xffB81736), Color(0xff281537)]),
+                 ),
+                padding: EdgeInsets.only(top: 30),
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      "Sélectionnez vos gammes de produits !",
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
+
               Padding(
-                padding: const EdgeInsets.only(top: 70),
+                padding: const EdgeInsets.only(top: 100),
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.only(topLeft: Radius.circular(40), topRight: Radius.circular(40)),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(40),
+                      topRight: Radius.circular(40),
+                    ),
                     color: Colors.white,
                   ),
                   height: double.infinity,
                   width: double.infinity,
                   child: Column(
                     children: [
-                      Padding(padding: EdgeInsets.only(top: 20)),
+                      SizedBox(height: 20),
                       Text(
                         "LES PRODUITS DE BOUTIQUE",
-                        style: TextStyle(fontStyle: FontStyle.italic),
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
+                      SizedBox(height: 10),
+
+
                       Expanded(
                         child: ListView.builder(
+                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           itemCount: articles.length,
                           itemBuilder: (context, index) {
                             final article = articles[index];
-                            return ListTile(
-                              leading: Image.network(article.imageUrl, width: 50, height: 50, fit: BoxFit.cover),
-                              title: Text(article.title),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('${article.price} FCFA'),
-                                  Text('Stock : ${article.Stocks}'),
-                                  if (article.collectionName != null)
-                                    Text('Gamme : ${article.collectionName}', style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
-                                ],
+                            return Card(
+                              color: Colors.white, // <-- couleur blanche
+                              margin: EdgeInsets.symmetric(vertical: 6),
+                              elevation: 3,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                              onTap: () {
-                                Navigator.push(
+                              child: ListTile(
+                                contentPadding: EdgeInsets.all(10),
+                                leading: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.network(
+                                    article.imageUrl,
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                title: Text(
+                                  article.title,
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(height: 4),
+                                    Text(
+                                      '${article.price} FCFA',
+                                      style: TextStyle(color: Colors.green[700]),
+                                    ),
+                                    Text('Stock : ${article.Stocks}', style: TextStyle(color: Colors.black54)),
+                                    if (article.collectionName != null)
+                                      Text(
+                                        'Gamme : ${article.collectionName}',
+                                        style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.black45),
+                                      ),
+                                  ],
+                                ),
+                                onTap: () {
+                                  Navigator.push(
                                     context,
-                                    PageRouteBuilder(pageBuilder: (_,__,___)=>ArticleDetailsPage(article: article),)
-
-                                );
-                              },
+                                    PageRouteBuilder(
+                                      pageBuilder: (_, __, ___) => Details_article(article: article),
+                                    ),
+                                  );
+                                },
+                              ),
                             );
                           },
                         ),
                       )
+
                     ],
                   ),
                 ),
@@ -156,51 +206,38 @@ class _HomePage_State extends State<HomePage> {
           );
         },
       ),
+
+
       floatingActionButton: isAdmin
           ? SpeedDial(
         animatedIcon: AnimatedIcons.add_event,
+        backgroundColor: Color(0xffB81736), // couleur principale
+        foregroundColor: Colors.white,       // icône en blanc
+        overlayColor: Colors.black,          // couleur overlay
+        overlayOpacity: 0.5,
         children: [
           SpeedDialChild(
+            backgroundColor: Color(0xffB81736), // couleur du child
+            foregroundColor: Colors.white,
             child: Icon(Icons.add_circle),
             label: "Ajouter",
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => AddArticlePage()));
+              Navigator.push(context, MaterialPageRoute(builder: (_) => Page_Ajout_article()));
             },
           ),
-
           SpeedDialChild(
+            backgroundColor: Color(0xff281537), // couleur différente pour le child
+            foregroundColor: Colors.white,
             child: Icon(Icons.navigate_next_rounded),
             label: "Navigation",
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => test_navigations()));
+              Navigator.push(context, MaterialPageRoute(builder: (_) => Navigations()));
             },
           ),
         ],
       )
           : null,
+
     );
   }
 }
-
-
-// ajouter se bouter codes apres pour un retour correct
-
-/*@override
-Widget build(BuildContext context) {
-  return WillPopScope(
-    onWillPop: () async {
-      // ✅ Revenir à HomePage quand on appuie sur retour
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => HomePage()),
-      );
-      return false; // Empêche le comportement par défaut
-    },
-    child: Scaffold(
-      appBar: AppBar(title: Text(widget.article.title)),
-      body: SingleChildScrollView(
-        // ton code habituel ici...
-      ),
-    ),
-  );
-}
-*/

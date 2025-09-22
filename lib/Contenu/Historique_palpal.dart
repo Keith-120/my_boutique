@@ -3,10 +3,10 @@ import 'package:firebase_database/firebase_database.dart';
 
 class HistoriquePaiementPage extends StatefulWidget {
   @override
-  _HistoriquePaiementPageState createState() => _HistoriquePaiementPageState();
+  HistoriquePaiementPageState createState() => HistoriquePaiementPageState();
 }
 
-class _HistoriquePaiementPageState extends State<HistoriquePaiementPage> {
+class HistoriquePaiementPageState extends State<HistoriquePaiementPage> {
   final DatabaseReference _dbRef =
   FirebaseDatabase.instance.ref().child('paiements');
 
