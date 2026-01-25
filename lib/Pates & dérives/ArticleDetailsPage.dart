@@ -200,7 +200,7 @@ import '../Contenu/Login.dart';
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Image produit
+
                       Image.network(widget.article.imageUrl, height: 250),
                       SizedBox(height: 20),
                       Text(widget.article.title,
@@ -213,14 +213,14 @@ import '../Contenu/Login.dart';
                           style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic)),
 
                       SizedBox(height: 20),
-                      // Quantité
+
                       _buildTextField(_quantiteController, "Quantité", icon: Icons.confirmation_num),
                       SizedBox(height: 15),
                       _buildButton("Ajouter au panier", addToCart),
 
                       SizedBox(height: 20),
 
-                      // Admin update
+
                       if (_userRole == 'admin') ...[
                         Divider(height: 40),
                         Text("Modifier le produit (admin)",

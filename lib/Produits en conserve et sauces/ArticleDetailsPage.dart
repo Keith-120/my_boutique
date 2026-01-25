@@ -176,7 +176,7 @@ class _ArticleDetailsPageState extends State<ArticleDetailsPage> {
       ),
       body: Stack(
         children: [
-          // Dégradé en arrière-plan
+
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -220,7 +220,7 @@ class _ArticleDetailsPageState extends State<ArticleDetailsPage> {
 
                     SizedBox(height: 20),
 
-                    // Admin update
+
                     if (_userRole == 'admin') ...[
                       Divider(height: 40),
                       Text("Modifier le produit (admin)",

@@ -30,6 +30,11 @@ class ToutCategorie extends StatelessWidget {
 
     return allArticles;
   }
+  final LinearGradient appGradient = const LinearGradient(
+    colors: [Color(0xffB81736), Color(0xff281537)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -59,37 +64,40 @@ class ToutCategorie extends StatelessWidget {
 
             return Stack(
               children: [
-                // Dégradé en arrière-plan
                 Container(
-                  height: double.infinity,
-                  // ce qui signifie que le conteneur dois  settendre et remplir toute la case de largeur de l ecrant
+                  height: 100,
                   width: double.infinity,
-                  // ce qui signifie que le conteneur dois  settendre et remplir toute la case de longueur de l ecrant
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      // elle va styliser en combinante les couleur
-                        colors: [Color(0xffB81736), Color(0xff281537)]),
+                    gradient: appGradient,
+                    borderRadius:
+                    const BorderRadius.only(bottomLeft: Radius.circular(40)),
                   ),
-                  child: Align(
-                    alignment: Alignment.topLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        "Sélectionnez vos produits préférés !",
-                        style: TextStyle(
-                          fontStyle: FontStyle.italic,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ),
+                  child: const Padding(
+                      padding: EdgeInsets.only(top: 20, left: 22),
+                      child:Column(
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              " Sélectionnez \n vos produits préférés !",
+                              style: TextStyle(
+                                fontStyle: FontStyle.italic,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                              textAlign: TextAlign.left,
+                            ),
+                          )
+                        ],
+                      )
                   ),
+
                 ),
 
 
                 Padding(
-                  padding: const EdgeInsets.only(top: 80),
+                  padding: const EdgeInsets.only(top: 110),
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.only(

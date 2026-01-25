@@ -2,40 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-// Pages importées
+import 'Admin_commande_Page.dart';
+import 'Etat_livraison_Client.dart';
 import 'Home.dart';
 import 'Panier.dart';
-import 'resume_commande.dart';
-import 'Delivery_status_admin.dart';
-import 'Status_ClientPage.dart';
-import 'Login.dart';
+
+
 import 'Tout_Categories.dart';
 import 'map_pages.dart';
-
-
-class LocalisationPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.map, size: 80, color: Colors.blueAccent),
-          SizedBox(height: 16),
-          Text(
-            "Page Localisation",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            "Ici vous pouvez intégrer Google Maps ou Leaflet",
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 
 class Navigations extends StatefulWidget {
   const Navigations({super.key});
@@ -45,248 +19,311 @@ class Navigations extends StatefulWidget {
 }
 
 class _NavigationsState extends State<Navigations> {
-  int test1 = 0;
+  int currentIndex = 0;
+
   String? userRole;
-  String? selectedUserId;
+  String? userName;
+  String? userEmail;
+  String? userPhotoUrl;
 
   User? currentUser = FirebaseAuth.instance.currentUser;
+
+  bool isLoading = true;
+
+  final LinearGradient appGradient = const LinearGradient(
+    colors: [Color(0xffB81736), Color(0xff281537)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 
   @override
   void initState() {
     super.initState();
-    getUserRole();
+    getUserData();
   }
 
-
-  Future<void> getUserRole() async {
+  Future<void> getUserData() async {
     if (currentUser != null) {
-      DocumentSnapshot snapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUser!.uid)
-          .collection('user')
-          .doc(currentUser!.uid)
-          .get();
+      try {
 
-      if (snapshot.exists) {
-        setState(() {
-          userRole = snapshot.get('role');
-          selectedUserId = currentUser!.uid;
-        });
+        DocumentSnapshot snapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUser!.uid)
+            .collection('user')
+            .doc(currentUser!.uid)
+            .get();
+
+        if (snapshot.exists) {
+          setState(() {
+            userRole = snapshot.get('role');
+            userName = snapshot.get('nom');
+            userEmail = snapshot.get('email');
+            userPhotoUrl = snapshot.get('photoUrl') ??
+                "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+            isLoading = false;
+          });
+        } else {
+          setState(() => isLoading = false);
+        }
+      } catch (e) {
+        debugPrint("Erreur récupération utilisateur : $e");
+        setState(() => isLoading = false);
       }
     }
   }
 
-  void setCurrentIndex(index) {
-    setState(() {
-      test1 = index;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final isAdmin = userRole == 'admin';
+    if (isLoading) {
+      return const Scaffold(
+
+        body: Center(
+            child: CircularProgressIndicator(
+              color: Color(0xffB81736),
+            )),
+      );
+    }
+
+    final bool isAdmin = userRole == 'admin';
+    final bool isClient = userRole == 'client';
 
 
     List<Widget> pages = [
       Home(),
       ToutCategorie(),
       Panier_page(),
-      MapPage(), // Localisation
-      if (isAdmin) resume_commande(),
-      if (userRole == 'client') ClientPage()
+      MapPage(),
+      if (isAdmin) AdminCommandesPage(),
+      if (isClient) MesLivraisonsPage(),
     ];
 
 
-    List<Widget> titles = [
-      Text("Accueil"),
-      Text("Produits"),
-      Text("Panier"),
-      Text("Localisation"),
-      if (isAdmin) Text("Commandes"),
-      if (userRole == 'client') Text("Suivi Livraison"),
-    ];
+    if (currentIndex >= pages.length) currentIndex = 0;
 
 
     List<BottomNavigationBarItem> navItems = [
-      BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Accueil"),
-      BottomNavigationBarItem(icon: Icon(Icons.category), label: "Produits"),
-      BottomNavigationBarItem(icon: Icon(Icons.shopping_basket), label: "Panier"),
-      BottomNavigationBarItem(icon: Icon(Icons.map_outlined), label: "Localisation"),
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.home_outlined),
+        activeIcon: Icon(Icons.home_rounded),
+        label: "Accueil",
+      ),
+
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.category_outlined),
+        activeIcon: Icon(Icons.category_rounded),
+        label: "Produits",
+      ),
+
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.shopping_basket_outlined),
+        activeIcon: Icon(Icons.shopping_basket_rounded),
+        label: "Panier",
+      ),
+
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.map_outlined),
+        activeIcon: Icon(Icons.map_rounded),
+        label: "Carte",
+      ),
+
       if (isAdmin)
-        BottomNavigationBarItem(icon: Icon(Icons.local_shipping), label: "Commandes"),
-      if (userRole == 'client')
-        BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: "Suivi"),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.local_shipping_outlined),
+          activeIcon: Icon(Icons.local_shipping_rounded),
+          label: "Commandes",
+        ),
+
+      if (isClient)
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.receipt_long_outlined),
+          activeIcon: Icon(Icons.receipt_long_rounded),
+          label: "Suivi",
+        ),
     ];
 
-    return WillPopScope(
-      onWillPop: () async {
-        final shouldExit = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text('Confirmer la sortie'),
-            content: Text('Voulez-vous vraiment quitter l\'application ?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text('Non'),
+    return Scaffold(
+      extendBody: true,
+      backgroundColor: const Color(0xFFF9F9F9),
+
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(gradient: appGradient),
+        ),
+
+        title: Row(
+          children: [
+            CircleAvatar(
+              radius: 22,
+              backgroundImage: NetworkImage(
+                userPhotoUrl ??
+                    "https://cdn-icons-png.flaticon.com/512/149/149071.png",
               ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text('Oui'),
-              ),
-            ],
-          ),
-        );
-        return shouldExit ?? false;
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          title: titles[test1],
-          actions: [
-
-            IconButton(
-              icon: Icon(Icons.account_circle_rounded, size: 28),
-              onPressed: () async {
-                User? currentUser = FirebaseAuth.instance.currentUser;
-
-
-                String nom = "Inconnu";
-                String email = "Inconnu";
-                String uid = "Inconnu";
-
-                if (currentUser != null) {
-                  email = currentUser.email ?? "Inconnu";
-                  uid = currentUser.uid;
-
-                  DocumentSnapshot userDoc = await FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(currentUser.uid)
-                      .get();
-
-                  if (userDoc.exists) {
-                    nom = userDoc.get('nom') ?? "Inconnu";
-                  }
-                }
-
-                showGeneralDialog(
-                  context: context,
-                  barrierLabel: "Profil",
-                  barrierDismissible: true,
-                  transitionDuration: Duration(milliseconds: 300),
-                  pageBuilder: (context, anim1, anim2) {
-                    return Align(
-                      alignment: Alignment.centerRight,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: Container(
-                          width: MediaQuery.of(context).size.width * 0.65,
-                          height: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(20),
-                                bottomLeft: Radius.circular(20)),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black26, blurRadius: 10, offset: Offset(-2, 0))
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-
-                              Container(
-                                width: double.infinity,
-                                padding: EdgeInsets.symmetric(vertical: 40),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [Color(0xffB81736), Color(0xff281537)],
-                                  ),
-                                  borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(20),
-                                      bottomRight: Radius.circular(20)),
-                                ),
-                                child: Column(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 45,
-                                      backgroundColor: Colors.white,
-                                      child: Icon(Icons.person, size: 50, color: Color(0xffB81736)),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      nom,
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-
-                              Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  children: [
-                                    Card(
-                                      elevation: 2,
-                                      margin: EdgeInsets.symmetric(vertical: 8),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12)),
-                                      child: ListTile(
-                                        leading: Icon(Icons.email, color: Colors.redAccent),
-                                        title: Text(email),
-                                      ),
-                                    ),
-                                    Card(
-                                      elevation: 2,
-                                      margin: EdgeInsets.symmetric(vertical: 8),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12)
-                                      ),
-                                      child: ListTile(
-                                        leading: Icon(Icons.vpn_key, color: Colors.redAccent),
-                                        title: Text(uid),
-                                      ),
-                                    ),
-                                    SizedBox(height: 20),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                  transitionBuilder: (context, anim1, anim2, child) {
-                    return SlideTransition(
-                      position: Tween<Offset>(
-                        begin: Offset(1, 0),
-                        end: Offset(0, 0),
-                      ).animate(anim1),
-                      child: child,
-                    );
-                  },
-                );
-              },
             ),
-
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  userName ?? "Utilisateur",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  userEmail ?? currentUser?.email ?? "",
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
 
-        body: pages[test1],
+
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+            onSelected: (value) {
+              switch (value) {
 
 
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: test1,
-          items: navItems,
-          onTap: setCurrentIndex,
-          selectedItemColor: Colors.redAccent,
-          unselectedItemColor: Colors.grey,
-          type: BottomNavigationBarType.fixed,
+                case 'admin_commandes':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => AdminCommandesPage()),
+                  );
+                  break;
+
+
+                case 'map_livreur':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => MapPage()),
+                  );
+                  break;
+
+
+                case 'mes_livraisons':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => MesLivraisonsPage()),
+                  );
+                  break;
+
+
+                case 'logout':
+                  FirebaseAuth.instance.signOut();
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const Home()),
+                        (_) => false,
+                  );
+                  break;
+              }
+            },
+
+            itemBuilder: (context) => [
+
+
+              if (userRole == 'admin')
+                const PopupMenuItem(
+                  value: 'admin_commandes',
+                  child: Row(
+                    children: [
+                      Icon(Icons.admin_panel_settings),
+                      SizedBox(width: 10),
+                      Text("Gestion commandes"),
+                    ],
+                  ),
+                ),
+
+
+              if (userRole == 'livreur')
+                const PopupMenuItem(
+                  value: 'map_livreur',
+                  child: Row(
+                    children: [
+                      Icon(Icons.map),
+                      SizedBox(width: 10),
+                      Text("Carte livraisons"),
+                    ],
+                  ),
+                ),
+
+
+              if (userRole == 'client')
+                const PopupMenuItem(
+                  value: 'mes_livraisons',
+                  child: Row(
+                    children: [
+                      Icon(Icons.receipt_long),
+                      SizedBox(width: 10),
+                      Text("Mes livraisons"),
+                    ],
+                  ),
+                ),
+
+              const PopupMenuDivider(),
+
+
+              const PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, color: Colors.red),
+                    SizedBox(width: 10),
+                    Text("Déconnexion"),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+
+
+      body: SafeArea(
+        top: false,
+        child: pages[currentIndex],
+      ),
+
+      bottomNavigationBar: Container(
+        margin: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(30),
+          child: BottomNavigationBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            currentIndex: currentIndex,
+            type: BottomNavigationBarType.fixed,
+            onTap: (index) {
+              setState(() {
+                currentIndex = index;
+              });
+            },
+            selectedItemColor: const Color(0xffB81736),
+            unselectedItemColor: Colors.black54,
+            showUnselectedLabels: true,
+            items: navItems,
+          ),
         ),
       ),
     );

@@ -27,7 +27,7 @@ class _Creation_CompteState extends State<Creation_Compte> {
     setState(() => _isLoading = true);
 
     try {
-      // 🔍 Vérifier si le téléphone existe déjà
+
       final phoneCheck = await FirebaseFirestore.instance
           .collection("users")
           .get();
@@ -66,7 +66,7 @@ class _Creation_CompteState extends State<Creation_Compte> {
           "nom": _nomController.text.trim(),
           "email": _emailController.text.trim(),
           "phone": _phoneController.text.trim(),
-          "role": "client", // 🔹 par défaut
+          "role": "client",
           "createdAt": FieldValue.serverTimestamp(),
         });
 
@@ -233,25 +233,23 @@ class _Creation_CompteState extends State<Creation_Compte> {
                         ),
                       ),
                       const SizedBox(height: 30),
-
                       const SizedBox(height: 30),
 
-                      // Bouton Créer
-                      // Bouton Créer avec dégradé identique au header
+
                       SizedBox(
                         height: 50,
                         width: 200,
                         child: Container(
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xffB81736), Color(0xff281537)], // 🔥 même dégradé
+                              colors: [Color(0xffB81736), Color(0xff281537)],
                             ),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _creerCompte,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent, // important pour voir le dégradé
+                              backgroundColor: Colors.transparent,
                               shadowColor: Colors.transparent,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),

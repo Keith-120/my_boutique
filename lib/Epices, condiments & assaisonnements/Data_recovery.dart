@@ -16,7 +16,7 @@ class Article {
     required this.price,
     required this.Stocks,
     required this.imageUrl,
-    this.collectionName, // Corrigé ici
+    this.collectionName,
   });
 
   factory Article.fromFirestore(DocumentSnapshot doc, String collectionName) {
@@ -36,7 +36,7 @@ class Article {
 
 Future<List<Article>> getArticles() async {
   List<Article> allArticles = [];
-  List<String> collections = ['Haricot', 'Chips', 'Article']; // Ajoute ici toutes tes collections
+  List<String> collections = ['Haricot', 'Chips', 'Article'];
 
   for (String collection in collections) {
     QuerySnapshot snapshot = await FirebaseFirestore.instance.collection(collection).get();

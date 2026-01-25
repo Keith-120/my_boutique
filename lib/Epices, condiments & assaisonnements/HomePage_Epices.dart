@@ -48,7 +48,7 @@ class _HomePage_EpicesState extends State<HomePage_Epices> {
 
   Future<List<Article>> Recupere_Articles() async {
     List<Article> allArticles = [];
-    List<String> collections = ['Épices, condiments & assaisonnements']; // Liste des collections
+    List<String> collections = ['Épices, condiments & assaisonnements'];
 
     for (String collection in collections) {
       QuerySnapshot snapshot = await FirebaseFirestore.instance.collection(collection).get();
@@ -72,18 +72,17 @@ class _HomePage_EpicesState extends State<HomePage_Epices> {
       body: FutureBuilder<List<Article>>(
         future: Recupere_Articles(),
         builder: (context, snapshot) {
-          // Loading indicator
+
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
 
-          // Erreur de récupération
           if (snapshot.hasError) {
             print('Erreur Firebase : ${snapshot.error}');
             return Center(child: Text('Erreur de récupération des articles'));
           }
 
-          // Aucun article
+
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(child: Text('Aucun article trouvé'));
           }
@@ -92,7 +91,7 @@ class _HomePage_EpicesState extends State<HomePage_Epices> {
 
           return Stack(
             children: [
-              // Dégradé arrière-plan
+
               Container(
                 height: double.infinity,
                 width: double.infinity,

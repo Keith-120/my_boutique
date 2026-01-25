@@ -4,20 +4,59 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:liste_aut/Contenu/navigations.dart';
 import 'Creation_Compte.dart';
 import 'Login.dart';
 
-class InterfaceApp extends StatelessWidget {
+class InterfaceApp extends StatefulWidget
+{
   const InterfaceApp({super.key});
 
+  @override
+  State<InterfaceApp> createState() => _InterfaceAppState();
+}
 
-  Future<void> cree_utilisateur(User user, {String? phone, String? name}) async {
-    final doc = FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final snapshot = await doc.get();
+class _InterfaceAppState extends State<InterfaceApp>
+    with SingleTickerProviderStateMixin
+
+{
+  late AnimationController controlleur_;
+  late Animation<double> fadeAnimation_;
+
+  @override
+  void initState() {
+    super.initState();
+
+    controlleur_ = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+
+    fadeAnimation_ = CurvedAnimation(
+      parent: controlleur_,
+      curve: Curves.easeInOut,
+    );
+
+    controlleur_.forward();
+  }
+
+  @override
+  void dispose() {
+    controlleur_.dispose();
+    super.dispose();
+  }
+
+
+  Future<void> cree_Utilisateur(User user, {String? phone, String? name}) async {
+    final userDoc = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('user') 
+        .doc(user.uid);
+
+    final snapshot = await userDoc.get();
     if (!snapshot.exists) {
-      await doc.set({
+      await userDoc.set({
         'uid': user.uid,
         'nom': name ?? user.displayName ?? 'Utilisateur',
         'email': user.email ?? '',
@@ -31,10 +70,10 @@ class InterfaceApp extends StatelessWidget {
 
   Future<void> signInWithGoogle(BuildContext context) async {
     try {
-      final googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) return; // Annulé par l'utilisateur
+      final googleUser_ = await GoogleSignIn().signIn();
+      if (googleUser_ == null) return;
 
-      final googleAuth = await googleUser.authentication;
+      final googleAuth = await googleUser_.authentication;
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -45,13 +84,13 @@ class InterfaceApp extends StatelessWidget {
       final user = userCredential.user;
 
       if (user != null) {
-        await cree_utilisateur(user, name: user.displayName);
+        await cree_Utilisateur(user, name: user.displayName);
         Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => Navigations()),
-        );
+            context, MaterialPageRoute(builder: (_) => const Navigations()));
       }
-    } catch (e) {
+    }
+    catch (e)
+    {
       debugPrint("Erreur Google Sign-In: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Erreur Google Sign-In: $e"), backgroundColor: Colors.red),
@@ -60,13 +99,11 @@ class InterfaceApp extends StatelessWidget {
   }
 
 
-  Future<void> signInWithApple(BuildContext context) async {
+  Future<void> signInWithApple(BuildContext context) async
+  {
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName
-        ],
+        scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
       );
 
       final oauthCredential = OAuthProvider("apple.com").credential(
@@ -79,13 +116,12 @@ class InterfaceApp extends StatelessWidget {
       final user = userCredential.user;
 
       if (user != null) {
-        String name =
-        credential.givenName != null ? '${credential.givenName} ${credential.familyName}' : user.displayName ?? 'Utilisateur';
-        await cree_utilisateur(user, name: name);
+        String name = credential.givenName != null
+            ? '${credential.givenName} ${credential.familyName}'
+            : user.displayName ?? 'Utilisateur';
+        await cree_Utilisateur(user, name: name);
         Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => Navigations()),
-        );
+            context, MaterialPageRoute(builder: (_) => const Navigations()));
       }
     } catch (e) {
       debugPrint("Erreur Apple Sign-In: $e");
@@ -95,8 +131,9 @@ class InterfaceApp extends StatelessWidget {
     }
   }
 
-  // 🔹 Connexion Facebook
-  Future<void> _signInWithFacebook(BuildContext context) async {
+
+  Future<void> signInWithFacebook(BuildContext context) async
+  {
     try {
       final result = await FacebookAuth.instance.login();
       if (result.status == LoginStatus.success) {
@@ -109,11 +146,9 @@ class InterfaceApp extends StatelessWidget {
 
         if (user != null) {
           final userData = await FacebookAuth.instance.getUserData();
-          await cree_utilisateur(user, name: userData['name']);
+          await cree_Utilisateur(user, name: userData['name']);
           Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => Navigations()),
-          );
+              context, MaterialPageRoute(builder: (_) => const Navigations()));
         }
       } else {
         debugPrint("Facebook login annulé : ${result.status}");
@@ -129,168 +164,168 @@ class InterfaceApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xffB81736), Color(0xff281537)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              const SizedBox(height: 100),
-              const CircleAvatar(
-                radius: 80,
-                backgroundImage: AssetImage("assets/images/shop.png"),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                "VENTE D'ARTICLES",
-                style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  fontSize: 26,
+      backgroundColor: Colors.white,
+      body: FadeTransition(
+        opacity: fadeAnimation_,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Spacer(),
+                const Text(
+                  "🛍️ Bienvenue dans la boutique en ligne",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 22,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                "Des soldes incroyables pour des clients incroyables 🎉",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  fontWeight: FontWeight.w400,
-                  fontSize: 14,
-                  color: Colors.white70,
+                const SizedBox(height: 10),
+                const Text(
+                  "Des soldes incroyables pour des clients incroyables 🎉",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black54,
+                    fontStyle: FontStyle.italic,
+                    fontSize: 14,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 80),
+                const SizedBox(height: 40),
 
-              SizedBox(
-                width: 250,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => const ecranlogin()));
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xffB81736),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  child: const Text(
-                    "Login",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Connexion_(
+                  label: "Se connecter",
+                  bgColor: const Color(0xffB81736),
+                  textColor: Colors.white,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ecranlogin()),
                   ),
                 ),
-              ),
-              const SizedBox(height: 15),
-              SizedBox(
-                width: 250,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => const Creation_Compte()));
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xff281537),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  child: const Text(
-                    "Register",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-              SizedBox(
-                width: 250,
-                child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => Navigations()));
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white, width: 2),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  child: const Text(
-                    "Commencer sans se connecter",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 40),
+                const SizedBox(height: 16),
 
-              Row(
-                children: const [
-                  Expanded(
-                    child: Divider(
-                      color: Colors.white54,
-                      thickness: 1,
-                      indent: 40,
-                      endIndent: 10,
-                    ),
+                Connexion_(
+                  label: "Créer un compte",
+                  bgColor: const Color(0xff281537),
+                  textColor: Colors.white,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const Creation_Compte()),
                   ),
-                  Text(
-                    "Ou continuer avec",
-                    style: TextStyle(color: Colors.white70, fontSize: 12),
-                  ),
-                  Expanded(
-                    child: Divider(
-                      color: Colors.white54,
-                      thickness: 1,
-                      indent: 10,
-                      endIndent: 40,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 30),
+                ),
+                const SizedBox(height: 16),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _socialButton("assets/images/270014.png",
-                          () => signInWithGoogle(context)),
-                  const SizedBox(width: 20),
-                  _socialButton("assets/images/iOS.jpg",
-                          () => signInWithApple(context)),
-                  const SizedBox(width: 20),
-                  _socialButton("assets/images/3665141.png",
-                          () => _signInWithFacebook(context)),
-                ],
-              ),
-            ],
+                _customOutlinedButton(
+                  label: "Continuer sans se connecter",
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const Navigations()),
+                  ),
+                ),
+                const SizedBox(height: 40),
+
+                Row(
+                  children: const [
+                    Expanded(
+                      child: Divider(thickness: 1, indent: 30, endIndent: 10),
+                    ),
+                    Text(
+                      "Ou continuer avec",
+                      style: TextStyle(color: Colors.black45, fontSize: 13),
+                    ),
+                    Expanded(
+                      child: Divider(thickness: 1, indent: 10, endIndent: 30),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 25),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Button_Connexion(
+                        "assets/images/270014.png",
+                            () => signInWithGoogle(context)),
+                    const SizedBox(width: 20),
+                    Button_Connexion(
+                        "assets/images/iOS.jpg",
+                            () => signInWithApple(context)),
+                    const SizedBox(width: 20),
+                    Button_Connexion(
+                        "assets/images/3665141.png",
+                            () => signInWithFacebook(context)),
+                  ],
+                ),
+                const Spacer(),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  static Widget _socialButton(String asset, VoidCallback onTap) {
+  // --- Widgets personnalisés ---
+  static Widget Connexion_({
+    required String label,
+    required Color bgColor,
+    required Color textColor,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: onTap,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: bgColor,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        ),
+        child: Text(label,
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.bold, color: textColor)),
+      ),
+    );
+  }
+
+  static Widget _customOutlinedButton({
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: onTap,
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Color(0xffB81736), width: 2),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: Color(0xffB81736),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static Widget Button_Connexion (String asset, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       child: CircleAvatar(
-        radius: 25,
+        radius: 28,
         backgroundColor: Colors.white,
-        child: Image.asset(asset, height: 25),
+        child: Image.asset(asset, height: 26),
       ),
     );
   }
 }
+

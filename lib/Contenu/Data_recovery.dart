@@ -16,7 +16,7 @@ class Article {
     required this.price,
     required this.Stocks,
     required this.imageUrl,
-    this.collectionName, // Corrigé ici
+    this.collectionName,
   });
 
   factory Article.fromFirestore(DocumentSnapshot doc, String collectionName) {

@@ -1,6 +1,4 @@
-import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -14,7 +12,7 @@ class Ajoute_Article_PageState extends State<Ajoute_Article_Page> {
   final titleController = TextEditingController();
   final priceController = TextEditingController();
   final urlController = TextEditingController();
-  final stockController = TextEditingController(); // ✅ Nouveau champ stock
+  final stockController = TextEditingController();
 
   final List<String> _collections = [
     'Haricot',
@@ -31,7 +29,7 @@ class Ajoute_Article_PageState extends State<Ajoute_Article_Page> {
   Future<void> _addArticle() async {
     String title = titleController.text.trim();
     String priceText = priceController.text.trim();
-    String stockText = stockController.text.trim(); // ✅ récupération du stock
+    String stockText = stockController.text.trim();
     String imageUrl = urlController.text.trim();
 
     if (title.isEmpty || priceText.isEmpty || stockText.isEmpty) {
@@ -63,7 +61,7 @@ class Ajoute_Article_PageState extends State<Ajoute_Article_Page> {
       await FirebaseFirestore.instance.collection(_selectedCollection).add({
         'title': title,
         'price': price,
-        'Stocks': Stocks, // ✅ ajout du stock
+        'Stocks': Stocks,
         'imageUrl': imageUrl,
         'collectionName': _selectedCollection,
         'createdAt': FieldValue.serverTimestamp(),
@@ -136,7 +134,7 @@ class Ajoute_Article_PageState extends State<Ajoute_Article_Page> {
                     _buildTextField(urlController, "URL de l'image",
                         icon: Icons.image),
                     SizedBox(height: 15),
-                    // Prix, Stock et URL côte à côte
+
                     Row(
                       children: [
                         Expanded(
@@ -148,7 +146,7 @@ class Ajoute_Article_PageState extends State<Ajoute_Article_Page> {
                         Expanded(
                           child: _buildTextField(stockController, "Stocks",
                               inputType: TextInputType.number,
-                              icon: Icons.storage), // ✅ champ stock
+                              icon: Icons.storage),
                         ),
                       ],
                     ),
@@ -175,9 +173,9 @@ class Ajoute_Article_PageState extends State<Ajoute_Article_Page> {
                           value: collection,
                           child: Text(
                             collection,
-                            style: TextStyle(fontSize: 14),   // 🔹 Réduit la taille du texte
-                            overflow: TextOverflow.ellipsis,  // 🔹 Ajoute "..." si c’est trop long
-                            maxLines: 2,                      // 🔹 Autorise le retour à la ligne
+                            style: TextStyle(fontSize: 14),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
                           ),
                         );
                       }).toList(),
@@ -186,7 +184,7 @@ class Ajoute_Article_PageState extends State<Ajoute_Article_Page> {
 
                     SizedBox(height: 30),
 
-                    // Bouton Ajouter
+
                     SizedBox(
                       width: 200,
                       height: 50,

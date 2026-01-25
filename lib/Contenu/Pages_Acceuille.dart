@@ -44,7 +44,7 @@ class _HomePage_State extends State<HomePage> {
 
   Future<List<Article>> recupere_articles() async {
     List<Article> allArticles = [];
-    List<String> collections = ['Haricot']; // Liste des collections
+    List<String> collections = ['Haricot'];
 
     for (String collection in collections) {
       QuerySnapshot snapshot = await FirebaseFirestore.instance.collection(collection).get();
@@ -56,15 +56,16 @@ class _HomePage_State extends State<HomePage> {
 
     return allArticles;
   }
+  final LinearGradient appGradient = const LinearGradient(
+    colors: [Color(0xffB81736), Color(0xff281537)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // AppBar
-      appBar: AppBar(
-        title: Text('Haricot'),
-        elevation: 0,
-      ),
+
       body: FutureBuilder<List<Article>>(
         future: recupere_articles(),
         builder: (context, snapshot) {
@@ -84,38 +85,47 @@ class _HomePage_State extends State<HomePage> {
             return Center(child: Text('aucun article trouvé'));
           }
 
+
           List<Article> articles = snapshot.data!;
 
           return Stack(
             children: [
-
-              Container(
-                height: double.infinity,
-                 width: double.infinity,
-                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      colors: [Color(0xffB81736), Color(0xff281537)]),
-                 ),
-                padding: EdgeInsets.only(top: 30),
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      "Sélectionnez vos gammes de produits !",
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
+            Container(
+            height: 130,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: appGradient,
+              borderRadius:
+              const BorderRadius.only(bottomLeft: Radius.circular(40)),
+            ),
+            child: const Padding(
+                padding: EdgeInsets.only(top: 50, left: 22),
+                child:Column(
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Sélectionnez vos \n gammes de produits  Haricot!",
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                        textAlign: TextAlign.left,
                       ),
-                    ),
-                  ),
-                ),
-              ),
+                    )
+
+                  ],
+
+                )
+
+            ),
+
+          ),
 
               Padding(
-                padding: const EdgeInsets.only(top: 100),
+                padding: const EdgeInsets.only(top: 140),
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.only(
@@ -206,18 +216,16 @@ class _HomePage_State extends State<HomePage> {
           );
         },
       ),
-
-
       floatingActionButton: isAdmin
           ? SpeedDial(
         animatedIcon: AnimatedIcons.add_event,
-        backgroundColor: Color(0xffB81736), // couleur principale
-        foregroundColor: Colors.white,       // icône en blanc
-        overlayColor: Colors.black,          // couleur overlay
+        backgroundColor: Color(0xffB81736),
+        foregroundColor: Colors.white,
+        overlayColor: Colors.black,
         overlayOpacity: 0.5,
         children: [
           SpeedDialChild(
-            backgroundColor: Color(0xffB81736), // couleur du child
+            backgroundColor: Color(0xffB81736),
             foregroundColor: Colors.white,
             child: Icon(Icons.add_circle),
             label: "Ajouter",
@@ -226,7 +234,7 @@ class _HomePage_State extends State<HomePage> {
             },
           ),
           SpeedDialChild(
-            backgroundColor: Color(0xff281537), // couleur différente pour le child
+            backgroundColor: Color(0xff281537),
             foregroundColor: Colors.white,
             child: Icon(Icons.navigate_next_rounded),
             label: "Navigation",

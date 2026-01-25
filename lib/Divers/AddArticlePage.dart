@@ -1,9 +1,6 @@
-import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+
 
 class Ajoute_Article_Page extends StatefulWidget {
   @override
@@ -148,13 +145,13 @@ class Ajoute_Article_PageState extends State<Ajoute_Article_Page> {
                         Expanded(
                           child: _buildTextField(stockController, "Stocks",
                               inputType: TextInputType.number,
-                              icon: Icons.storage), // ✅ champ stock
+                              icon: Icons.storage),
                         ),
                       ],
                     ),
 
                     SizedBox(height: 20),
-                    // Dropdown catégorie
+
                     DropdownButtonFormField<String>(
                       value: _selectedCollection,
                       onChanged: (value) =>

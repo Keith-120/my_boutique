@@ -48,7 +48,7 @@ class _HomePage_patesState extends State<HomePage_pates> {
 
   Future<List<Article>> Recupere_Articles() async {
     List<Article> allArticles = [];
-    List<String> collections = ['Pâtes & dérivés']; // Liste des collections
+    List<String> collections = ['Pâtes & dérivés'];
 
     for (String collection in collections) {
       QuerySnapshot snapshot = await FirebaseFirestore.instance.collection(collection).get();
@@ -153,7 +153,7 @@ class _HomePage_patesState extends State<HomePage_pates> {
                           itemBuilder: (context, index) {
                             final article = articles[index];
                             return Card(
-                              color: Colors.white, // <-- couleur blanche
+                              color: Colors.white,
                               margin: EdgeInsets.symmetric(vertical: 6),
                               elevation: 3,
                               shape: RoundedRectangleBorder(

@@ -10,14 +10,16 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:permission_handler/permission_handler.dart';
 
-import 'OrangeMoneyPage.dart';
+import 'navigations.dart';
 
-class MapPage extends StatefulWidget {
+class MapPage extends StatefulWidget
+{
   @override
   MapPageState createState() => MapPageState();
 }
 
-class MapPageState extends State<MapPage> {
+class MapPageState extends State<MapPage>
+{
   final phoneController = TextEditingController();
   final nomController = TextEditingController();
   final TextEditingController clientAddressController = TextEditingController();
@@ -35,7 +37,8 @@ class MapPageState extends State<MapPage> {
     obtenir_Permission_Location();
   }
 
-  Future<void> obtenir_Permission_Location() async {
+  Future<void> obtenir_Permission_Location() async
+  {
     var status = await Permission.location.request();
     if (status.isGranted) {
       _getCurrentLocation();
@@ -49,8 +52,10 @@ class MapPageState extends State<MapPage> {
     }
   }
 
-  Future<void> _getCurrentLocation() async {
-    try {
+  Future<void> _getCurrentLocation() async
+  {
+    try
+    {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
@@ -145,10 +150,7 @@ class MapPageState extends State<MapPage> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => OrangeMoneyPage(
-          montant: 5000,
-          cartItems: [],
-        ),
+          builder: (context) => Navigations()
       ),
     );
   }
@@ -222,13 +224,13 @@ class MapPageState extends State<MapPage> {
               ],
             ),
           ),
-          backgroundColor: Colors.transparent, // pour garder le dégradé
+          backgroundColor: Colors.transparent,
         ),
       ),
 
       body: Column(
         children: [
-          // Champ adresse client
+
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Row(
@@ -396,8 +398,8 @@ class MapPageState extends State<MapPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
-                      backgroundColor: Colors.transparent, // important
-                      shadowColor: Colors.transparent,     // enlever l’ombre violette
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
                     ),
                     child: Text(
                       "Envoyer",
@@ -419,4 +421,4 @@ class MapPageState extends State<MapPage> {
       ),
     );
   }
-  }
+}

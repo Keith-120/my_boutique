@@ -38,7 +38,7 @@ class RecuPage extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.of(context)
-                      .popUntil((route) => route.isFirst); // Retour accueil
+                      .popUntil((route) => route.isFirst);
                 },
                 child: Text("Retour à l'accueil"),
               ),

@@ -221,7 +221,7 @@ class _HomePage_DiversState extends State<HomePage_Divers> {
         overlayOpacity: 0.5,
         children: [
           SpeedDialChild(
-            backgroundColor: Color(0xffB81736), // couleur du child
+            backgroundColor: Color(0xffB81736),
             foregroundColor: Colors.white,
             child: Icon(Icons.add_circle),
             label: "Ajouter",
@@ -230,7 +230,7 @@ class _HomePage_DiversState extends State<HomePage_Divers> {
             },
           ),
           SpeedDialChild(
-            backgroundColor: Color(0xff281537), // couleur différente pour le child
+            backgroundColor: Color(0xff281537),
             foregroundColor: Colors.white,
             child: Icon(Icons.navigate_next_rounded),
             label: "Navigation",

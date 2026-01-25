@@ -12,6 +12,7 @@ class Details_article extends StatefulWidget {
 
   @override
   State<Details_article> createState() => Details_articleState();
+
 }
 
 class Details_articleState extends State<Details_article> {
@@ -162,29 +163,55 @@ class Details_articleState extends State<Details_article> {
       );
     }
   }
+  final LinearGradient appGradient = const LinearGradient(
+    colors: [Color(0xffB81736), Color(0xff281537)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: Text(widget.article.title),
+
+      body:Stack(
+    children: [
+    Container(
+    height: 130,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: appGradient,
+        borderRadius:
+        const BorderRadius.only(bottomLeft: Radius.circular(40)),
+      ),
+      child: const Padding(
+          padding: EdgeInsets.only(top: 50, left: 22),
+          child:Column(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  " Sélectionnez \n vos produits préférés !",
+                  style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                  textAlign: TextAlign.left,
+                ),
+              )
+
+            ],
+
+          )
 
       ),
-      body: Stack(
-        children: [
-          // Dégradé en arrière-plan
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xffB81736), Color(0xff281537)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-          ),
+
+    ),
           Padding(
-            padding: const EdgeInsets.only(top: 70),
+            padding: const EdgeInsets.only(top: 140),
             child: Container(
               width: double.infinity,
               height: double.infinity,

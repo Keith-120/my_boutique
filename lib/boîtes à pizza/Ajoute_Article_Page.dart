@@ -137,7 +137,7 @@ class Ajoute_Article_PageState extends State<Ajoute_Article_Page> {
                     _buildTextField(urlController, "URL de l'image",
                         icon: Icons.image),
                     SizedBox(height: 15),
-                    // Prix, Stock et URL côte à côte
+
                     Row(
                       children: [
                         Expanded(

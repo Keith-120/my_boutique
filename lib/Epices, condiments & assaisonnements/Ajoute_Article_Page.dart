@@ -1,9 +1,6 @@
-import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+
 
 class Ajoute_Article_Page extends StatefulWidget {
   @override
@@ -31,7 +28,7 @@ class Ajoute_Article_PageState extends State<Ajoute_Article_Page> {
   Future<void> _addArticle() async {
     String title = titleController.text.trim();
     String priceText = priceController.text.trim();
-    String stockText = stockController.text.trim(); // ✅ récupération du stock
+    String stockText = stockController.text.trim();
     String imageUrl = urlController.text.trim();
 
     if (title.isEmpty || priceText.isEmpty || stockText.isEmpty) {
@@ -63,7 +60,7 @@ class Ajoute_Article_PageState extends State<Ajoute_Article_Page> {
       await FirebaseFirestore.instance.collection(_selectedCollection).add({
         'title': title,
         'price': price,
-        'Stocks': Stocks, // ✅ ajout du stock
+        'Stocks': Stocks,
         'imageUrl': imageUrl,
         'collectionName': _selectedCollection,
         'createdAt': FieldValue.serverTimestamp(),

@@ -10,7 +10,7 @@ class Page_Ajout_articleState extends State<Page_Ajout_article> {
   final titleController = TextEditingController();
   final priceController = TextEditingController();
   final urlController = TextEditingController();
-  final stockController = TextEditingController(); // ✅ Nouveau champ stock
+  final stockController = TextEditingController();
 
   final List<String> _collections = [
     'Haricot',
@@ -27,7 +27,7 @@ class Page_Ajout_articleState extends State<Page_Ajout_article> {
   Future<void> _addArticle() async {
     String title = titleController.text.trim();
     String priceText = priceController.text.trim();
-    String stockText = stockController.text.trim(); // ✅ récupération du stock
+    String stockText = stockController.text.trim();
     String imageUrl = urlController.text.trim();
 
     if (title.isEmpty || priceText.isEmpty || stockText.isEmpty) {
@@ -36,6 +36,7 @@ class Page_Ajout_articleState extends State<Page_Ajout_article> {
       );
       return;
     }
+
 
     double? price = double.tryParse(priceText);
     int? Stocks = int.tryParse(stockText);
@@ -59,7 +60,7 @@ class Page_Ajout_articleState extends State<Page_Ajout_article> {
       await FirebaseFirestore.instance.collection(_selectedCollection).add({
         'title': title,
         'price': price,
-        'Stocks': Stocks, // ✅ ajout du stock
+        'Stocks': Stocks,
         'imageUrl': imageUrl,
         'collectionName': _selectedCollection,
         'createdAt': FieldValue.serverTimestamp(),
@@ -79,28 +80,54 @@ class Page_Ajout_articleState extends State<Page_Ajout_article> {
     }
   }
 
+  final LinearGradient appGradient = const LinearGradient(
+    colors: [Color(0xffB81736), Color(0xff281537)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Ajouter un article"),
-        centerTitle: true,
-        elevation: 0,
-      ),
+
       body: Stack(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xffB81736), Color(0xff281537)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
+        Container(
+        height: 130,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: appGradient,
+          borderRadius:
+          const BorderRadius.only(bottomLeft: Radius.circular(40)),
+        ),
+        child: const Padding(
+            padding: EdgeInsets.only(top: 50, left: 22),
+            child:Column(
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Ajouter \n vos articles  ",
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                    textAlign: TextAlign.left,
+                  ),
+                )
 
-          ),
+              ],
+
+            )
+
+        ),
+
+      ),
+
           Padding(
-            padding: const EdgeInsets.only(top: 100),
+            padding: const EdgeInsets.only(top: 140),
             child: Container(
               width: double.infinity,
               height: double.infinity,
@@ -125,14 +152,14 @@ class Page_Ajout_articleState extends State<Page_Ajout_article> {
                     ),
                     SizedBox(height: 20),
 
-                    // Titre
+
                     _buildTextField(titleController, "Titre",
                         icon: Icons.article),
                     SizedBox(height: 15),
                     _buildTextField(urlController, "URL de l'image",
                         icon: Icons.image),
                     SizedBox(height: 15),
-                    // Prix, Stock et URL côte à côte
+
                     Row(
                       children: [
                         Expanded(
@@ -144,13 +171,13 @@ class Page_Ajout_articleState extends State<Page_Ajout_article> {
                         Expanded(
                           child: _buildTextField(stockController, "Stocks",
                               inputType: TextInputType.number,
-                              icon: Icons.storage), // ✅ champ stock
+                              icon: Icons.storage),
                         ),
                       ],
                     ),
 
                     SizedBox(height: 20),
-                    // Dropdown catégorie
+
                     DropdownButtonFormField<String>(
                       value: _selectedCollection,
                       onChanged: (value) =>
@@ -171,9 +198,9 @@ class Page_Ajout_articleState extends State<Page_Ajout_article> {
                           value: collection,
                           child: Text(
                             collection,
-                            style: TextStyle(fontSize: 14),   // 🔹 Réduit la taille du texte
-                            overflow: TextOverflow.ellipsis,  // 🔹 Ajoute "..." si c’est trop long
-                            maxLines: 2,                      // 🔹 Autorise le retour à la ligne
+                            style: TextStyle(fontSize: 14),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
                           ),
                         );
                       }).toList(),
@@ -221,7 +248,7 @@ class Page_Ajout_articleState extends State<Page_Ajout_article> {
               ),
             ),
           ),
-        ],
+      ]
       ),
     );
   }

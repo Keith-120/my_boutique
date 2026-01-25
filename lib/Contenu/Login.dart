@@ -6,14 +6,16 @@ import 'Mots_pass_oublie.dart';
 import 'connexion_Insription_fire.dart';
 import 'navigations.dart';
 
-class ecranlogin extends StatefulWidget {
+class ecranlogin extends StatefulWidget
+{
   const ecranlogin({super.key});
 
   @override
   State<ecranlogin> createState() => ecranloginState();
 }
 
-class ecranloginState extends State<ecranlogin> {
+class ecranloginState extends State<ecranlogin>
+{
   bool isLoading = false;
   bool isObscure = true;
   final AuthentificationService auth = AuthentificationService();
@@ -21,7 +23,7 @@ class ecranloginState extends State<ecranlogin> {
   TextEditingController _email = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   User? currentUser;
-
+// cette fonction dispose m evite des fuite de memoire cote email et passwors
   @override
   void dispose() {
     _email.dispose();
@@ -29,8 +31,8 @@ class ecranloginState extends State<ecranlogin> {
     super.dispose();
   }
 
-
-  Future<void> Chargement_execution(Future<void> Function() task) async {
+  Future<void> Chargement_execution(Future<void> Function() task) async
+  {
     setState(() => isLoading = true);
     try {
       await task();
@@ -43,7 +45,7 @@ class ecranloginState extends State<ecranlogin> {
 
 
   Future<bool> _onWillPop() async {
-    final shouldExit = await showDialog<bool>(
+    final Quitte = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirmer la sortie'),
@@ -60,7 +62,7 @@ class ecranloginState extends State<ecranlogin> {
         ],
       ),
     );
-    return shouldExit ?? false;
+    return Quitte ?? false;
   }
 
   @override
@@ -137,7 +139,6 @@ class ecranloginState extends State<ecranlogin> {
                         ),
                       ),
                       const SizedBox(height: 20),
-
 
                       SizedBox(
                         width: 300,
@@ -286,7 +287,8 @@ class ecranloginState extends State<ecranlogin> {
       return;
     }
 
-    Chargement_execution(() async {
+    Chargement_execution(() async
+    {
       User? user = await auth.signInWithEmailAndPassword(email, password);
       if (user != null) {
         currentUser = user;

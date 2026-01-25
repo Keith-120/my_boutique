@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:liste_aut/boîtes à pizza/Article.dart';
 import 'package:liste_aut/boîtes à pizza/ArticleDetailsPage.dart';
-
 import 'package:liste_aut/boîtes à pizza/Ajoute_Article_Page.dart';
 import 'package:liste_aut/Contenu/navigations.dart';
 
@@ -26,8 +25,6 @@ class _HomePage_BoiteState extends State<HomePage_Boite> {
     super.initState();
     Verifie_Admin();
   }
-
-
   Future<void> Verifie_Admin() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -44,11 +41,9 @@ class _HomePage_BoiteState extends State<HomePage_Boite> {
       }
     }
   }
-
-
   Future<List<Article>> Recupere_Articles() async {
     List<Article> allArticles = [];
-    List<String> collections = ['boîtes à pizza']; // Liste des collections
+    List<String> collections = ['boîtes à pizza'];
 
     for (String collection in collections) {
       QuerySnapshot snapshot = await FirebaseFirestore.instance.collection(collection).get();
@@ -215,13 +210,13 @@ class _HomePage_BoiteState extends State<HomePage_Boite> {
       floatingActionButton: isAdmin
           ? SpeedDial(
         animatedIcon: AnimatedIcons.add_event,
-        backgroundColor: Color(0xffB81736), // couleur principale
-        foregroundColor: Colors.white,       // icône en blanc
-        overlayColor: Colors.black,          // couleur overlay
+        backgroundColor: Color(0xffB81736),
+        foregroundColor: Colors.white,
+        overlayColor: Colors.black,
         overlayOpacity: 0.5,
         children: [
           SpeedDialChild(
-            backgroundColor: Color(0xffB81736), // couleur du child
+            backgroundColor: Color(0xffB81736),
             foregroundColor: Colors.white,
             child: Icon(Icons.add_circle),
             label: "Ajouter",
@@ -230,7 +225,7 @@ class _HomePage_BoiteState extends State<HomePage_Boite> {
             },
           ),
           SpeedDialChild(
-            backgroundColor: Color(0xff281537), // couleur différente pour le child
+            backgroundColor: Color(0xff281537),
             foregroundColor: Colors.white,
             child: Icon(Icons.navigate_next_rounded),
             label: "Navigation",

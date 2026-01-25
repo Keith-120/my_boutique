@@ -6,7 +6,8 @@ class Mots_pass_oublie extends StatefulWidget {
   Mots_pass_oublieState createState() => Mots_pass_oublieState();
 }
 
-class Mots_pass_oublieState extends State<Mots_pass_oublie> {
+class Mots_pass_oublieState extends State<Mots_pass_oublie>
+{
   final TextEditingController _emailController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = false;
@@ -37,7 +38,7 @@ class Mots_pass_oublieState extends State<Mots_pass_oublie> {
   Future<void> _resetPassword() async {
     final email = _emailController.text.trim();
 
-    // Vérification avec regex plutôt que contains('@')
+
     final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
     if (email.isEmpty || !emailRegex.hasMatch(email)) {
       _showSnack('Veuillez entrer une adresse e-mail valide.', error: true);
@@ -86,7 +87,6 @@ class Mots_pass_oublieState extends State<Mots_pass_oublie> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background dégradé
           Container(
             height: double.infinity,
             width: double.infinity,
@@ -107,7 +107,7 @@ class Mots_pass_oublieState extends State<Mots_pass_oublie> {
             ),
           ),
 
-          // Contenu
+
           Padding(
             padding: const EdgeInsets.only(top: 150),
             child: Container(
@@ -133,7 +133,7 @@ class Mots_pass_oublieState extends State<Mots_pass_oublie> {
                     ),
                     const SizedBox(height: 15),
 
-                    // Champ email
+
                     SizedBox(
                       height: 50,
                       width: 300,
@@ -150,7 +150,7 @@ class Mots_pass_oublieState extends State<Mots_pass_oublie> {
                     ),
                     const SizedBox(height: 30),
 
-                    // Bouton envoyer
+
                     _isLoading
                         ? const CircularProgressIndicator()
                         : SizedBox(
@@ -169,7 +169,6 @@ class Mots_pass_oublieState extends State<Mots_pass_oublie> {
 
                     const SizedBox(height: 20),
 
-                    // Bouton retour
                     TextButton(
                       onPressed: () => Navigator.pop(context),
                       child: const Text("← Retour à la connexion", style: TextStyle(color: Colors.black54)),

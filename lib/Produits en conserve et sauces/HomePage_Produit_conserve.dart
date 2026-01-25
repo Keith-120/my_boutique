@@ -48,7 +48,7 @@ class _HomePage_Produit_conserveState extends State<HomePage_Produit_conserve> {
 
   Future<List<Article>> Recupere_Articles() async {
     List<Article> allArticles = [];
-    List<String> collections = ['Produits en conserve et sauces']; // Liste des collections
+    List<String> collections = ['Produits en conserve et sauces'];
 
     for (String collection in collections) {
       QuerySnapshot snapshot = await FirebaseFirestore.instance.collection(collection).get();
@@ -209,7 +209,7 @@ class _HomePage_Produit_conserveState extends State<HomePage_Produit_conserve> {
         },
       ),
 
-      // Bouton flottant pour admin
+
       floatingActionButton: isAdmin
           ? SpeedDial(
         animatedIcon: AnimatedIcons.add_event,
